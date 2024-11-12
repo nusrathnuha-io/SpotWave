@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <title>Obstacle Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      height: 100vh;
+      background: url('/static/background.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 1000px;
+      background: #b2b2b2;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-left: 200px;
+      border-radius: 8px;
+    }
+
+    .background-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 15%;
+      height: 100%;
+      background-color: #36486b;
+      z-index: -1;
+    }
+
+    .form-container {
+      position: relative;
+      z-index: 1;
+      background-color: #b2b2b2;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .obstacle-count, .buttons {
+      margin-bottom: 20px;
+    }
+
+    label {
+      margin-right: 10px;
+    }
+
+    input[type="number"], input[type="text"], select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    input[type="number"] {
+      width: 96%;
+    }
+
+    .obstacle, .wall {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .obstacle label, .wall label {
+      margin-right: 5px;
+    }
+
+    .obstacle input, .obstacle select, .wall input, .wall select {
+      width: 20%;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px; /* Rounded corners */
+      background-color: #cd685a;
+      color: #fff;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .right-side {
+      position: absolute;
+      bottom: 0;
+      right: 0; /* Adjusts horizontal placement */
+    }
+
+    .right-side img {
+      width: 230px; /* Adjust the width as needed */
+      height: auto; /* Maintain aspect ratio */
+    }
+
+    .logo img {
+      max-height: 200px; /* Adjust the height as needed */
+      width: auto; /* Maintain the aspect ratio */
+      margin-bottom: 40px; 
+      margin-top: 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="background-container">
+      <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></div>
+    </div>
+    <div class="form-container" data-aos="fade-down">
+      <h1>Obstacle Details</h1>
+      <p>Identify and describe the obstacles in your environment that affect Wi-Fi signal quality. These obstacles can include large cabinets, metal appliances, furniture 🛋️, and reflective surfaces 🪞. Enter their names, types, and coordinates below to optimize your Wi-Fi placement.</p>
+
+      <div class="obstacle-count">
+        <label for="num-obstacles">Number of Obstacles:</label>
+        <input type="number" id="num-obstacles" min="1" value="1">
+      </div>
+      <div id="obstacle-details"></div>
+      
+      <div class="buttons">
+        <button id="back-btn">Back</button>
+        <button id="submit-btn">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+      // Initialize AOS
+      AOS.init();
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const numObstaclesInput = document.getElementById('num-obstacles');
+        const obstacleDetailsContainer = document.getElementById('obstacle-details');
+        const backButton = document.getElementById('back-btn');
+        const submitButton = document.getElementById('submit-btn');
+
+        const obstacleNames = [
+          "Large Cabinets",
+          "Bookshelves",
+          "Microwave Oven",
+          "Refrigerators",
+          "Mirrors"
+        ];
+        
+        const obstacleTypes = ["brick", "glass", "wood", "steel"];
+        
+        function createSelect(options, id) {
+          const select = document.createElement('select');
+          select.id = id;
+          select.name = id;
+          options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = option;
+            select.appendChild(opt);
+          });
+          return select;
+        }
+
+        function generateObstacleDetails(numObstacles) {
+          obstacleDetailsContainer.innerHTML = '';
+          for (let i = 1; i <= numObstacles; i++) {
+            const obstacleDiv = document.createElement('div');
+            obstacleDiv.className = 'obstacle';
+
+            const nameLabel = document.createElement('label');
+            nameLabel.textContent = `Name:`;
+            nameLabel.htmlFor = `obstacle-${i}-name`;
+
+            const nameSelect = createSelect(obstacleNames, `obstacle-${i}-name`);
+
+            const typeLabel = document.createElement('label');
+            typeLabel.textContent = `Type:`;
+            typeLabel.htmlFor = `obstacle-${i}-type`;
+
+            const typeSelect = createSelect(obstacleTypes, `obstacle-${i}-type`);
+
+            const xCoordLabel = document.createElement('label');
+            xCoordLabel.textContent = `X(m):`;
+            xCoordLabel.htmlFor = `obstacle-${i}-x`;
+
+            const xCoordInput = document.createElement('input');
+            xCoordInput.type = 'number';
+            xCoordInput.id = `obstacle-${i}-x`;
+            xCoordInput.name = `obstacle-${i}-x`;
+            xCoordInput.placeholder = `X Coordinate`;
+
+            const yCoordLabel = document.createElement('label');
+            yCoordLabel.textContent = `Y(m):`;
+            yCoordLabel.htmlFor = `obstacle-${i}-y`;
+
+            const yCoordInput = document.createElement('input');
+            yCoordInput.type = 'number';
+            yCoordInput.id = `obstacle-${i}-y`;
+            yCoordInput.name = `obstacle-${i}-y`;
+            yCoordInput.placeholder = `Y Coordinate`;
+
+            obstacleDiv.appendChild(nameLabel);
+            obstacleDiv.appendChild(nameSelect);
+            obstacleDiv.appendChild(typeLabel);
+            obstacleDiv.appendChild(typeSelect);
+            obstacleDiv.appendChild(xCoordLabel);
+            obstacleDiv.appendChild(xCoordInput);
+            obstacleDiv.appendChild(yCoordLabel);
+            obstacleDiv.appendChild(yCoordInput);
+
+            obstacleDetailsContainer.appendChild(obstacleDiv);
+          }
+        }
+
+        // Initial generation of obstacle details
+        generateObstacleDetails(numObstaclesInput.value);
+
+        // Event listener for changes in the number of obstacles
+        numObstaclesInput.addEventListener('input', (event) => {
+          const numObstacles = event.target.value;
+          if (numObstacles >= 1) {
+            generateObstacleDetails(numObstacles);
+          }
+        });
+
+        // Event listener for the back button
+        backButton.addEventListener('click', () => {
+          window.location.href = "{{ url_for('layout1') }}";  // Use Flask's url_for
+        });
+
+        // Event listener for the submit button
+        submitButton.addEventListener('click', () => {
+          // Validate empty fields and negative numbers before submission
+          const formValid = validateForm();
+          if (formValid) {
+            const obstacleData = [];
+            for (let i = 1; i <= numObstaclesInput.value; i++) {
+              const name = document.getElementById(`obstacle-${i}-name`).value;
+              const type = document.getElementById(`obstacle-${i}-type`).value;
+              const x = document.getElementById(`obstacle-${i}-x`).value;
+              const y = document.getElementById(`obstacle-${i}-y`).value;
+              obstacleData.push({ name, type, x, y });
+            }
+
+            localStorage.setItem('obstacleData', JSON.stringify(obstacleData));
+            window.location.href = "{{ url_for('drag') }}";  // Use Flask's url_for
+          }
+        });
+
+        // Function to validate empty fields and display error messages
+        function validateForm() {
+          let isValid = true;
+          const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select');
+          inputs.forEach(input => {
+            if (!input.value.trim()) {
+              showErrorMessage(input, 'This field is required.');
+              isValid = false;
+            } else {
+              hideErrorMessage(input);
+            }
+
+            // Additional validation for number inputs
+            if (input.type === 'number' && input.value.trim() !== '' && parseFloat(input.value) < 0) {
+              showErrorMessage(input, 'Please enter a positive number.');
+              isValid = false;
+            }
+          });
+          return isValid;
+        }
+
+        // Function to display error message
+        function showErrorMessage(input, message) {
+          const parent = input.parentElement;
+          const errorMessage = parent.querySelector('.error-message');
+          if (errorMessage) {
+            errorMessage.textContent = message;
+          } else {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error-message';
+            errorElement.textContent = message;
+            parent.appendChild(errorElement);
+          }
+        }
+
+        // Function to hide error message
+        function hideErrorMessage(input) {
+          const parent = input.parentElement;
+          const errorMessage = parent.querySelector('.error-message');
+          if (errorMessage) {
+            parent.removeChild(errorMessage);
+          }
+        }
+      });
+  </script>
+</body>
+</html>

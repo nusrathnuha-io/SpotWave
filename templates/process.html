@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solution in Progress</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .spinner {
+      width: 80px;
+      height: 80px;
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .text {
+      margin-top: 20px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <div class="text">Solution in Progress</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let retryCount = 0; // Initialize retry count
+      const maxRetries = 10; // Maximum number of retries
+      const checkInterval = 3000; // Check interval in milliseconds (3 seconds)
+
+      // Function to initiate signal degradation analysis
+      function startAnalysis() {
+        fetch('/analyze_signal_degradation', { method: 'POST' })
+          .then(response => {
+            if (response.ok) {
+              // Start checking for the report file if analysis is successful
+              checkReportFile();
+            } else {
+              alert('Failed to initiate analysis. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Error starting analysis:', error);
+            alert('An error occurred. Please try again.');
+          });
+      }
+
+      // Function to check for the report file
+      function checkReportFile() {
+        fetch('report.txt', { method: 'HEAD' })
+          .then(response => {
+            if (response.ok) {
+              // If file is found, redirect to result.html
+              window.location.href = '/result';
+            } else {
+              // If file is not found and retries remain
+              if (retryCount < maxRetries) {
+                retryCount++;
+                // Retry after a certain interval
+                setTimeout(checkReportFile, checkInterval);
+              } else {
+                // Notify user after max retries
+                alert('Max retries reached. Please try again later.');
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error checking report file:', error);
+            // Retry on error if retries remain
+            if (retryCount < maxRetries) {
+              retryCount++;
+              setTimeout(checkReportFile, checkInterval);
+            } else {
+              alert('Max retries reached. Please try again later.');
+            }
+          });
+      }
+  
+      // Start the analysis process
+      startAnalysis();
+    });
+  </script>
+</body>
+</html>

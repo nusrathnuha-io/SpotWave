@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <title>WiFi Layout Optimization</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .left-panel {
+            background: linear-gradient(to right, rgb(33, 114, 141) 30%, white 70%);
+            text-align: center;
+            overflow-y: auto; /* Enable scrolling */
+            flex: 1; 
+            padding: 50px;
+        }
+      
+      
+        .right-panel {
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            flex: 1; /* Use remaining space */
+        }
+        .logo img {
+            max-height: 100px; /* Adjust the height as needed */
+            width: auto; /* Maintain the aspect ratio */
+            margin-bottom: 40px; 
+            margin-top: 40px;
+         }
+        .right-panel img {
+            max-width: 75%;
+            height: auto;
+            margin-top: 60px;
+        }
+
+        #get-started-btn {
+            margin-top: 50px;
+            padding: 10px 20px;
+            background-color: #034f84;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        
+        #get-started-btn:hover {
+            background-color: #36486b;
+        }
+
+        .l-header {
+            width: 100%;
+            position: fixed;
+            line-height: 40px;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background-color: #284a65;
+            box-shadow: 0 1px 4px rgba(146,161,176,.15);
+            display: flex;
+            justify-content: center; /* Center the navigation items */
+            align-items: center; /* Center align items vertically */
+            padding: 10px 20px;
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: center; /* Center the items within the nav */
+            width: 100%; /* Make the nav take full width */
+        }
+        
+        .nav__list {
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            color: black;
+            align-items: center; /* Align items vertically */
+        }
+        
+        .nav__item {
+            margin-bottom: 0;
+        }
+        
+        .nav__link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        
+        .nav__link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        
+        .nav__item img {
+            height: 40px; /* Adjust the height of the logo */
+        }
+
+        #why-us {
+            padding: 40px 20px; /* Add padding for better readability */
+            text-align: center; /* Center align text */
+            font-size: 18px; /* Increase the font size for readability */
+            line-height: 1.8; /* Add line height for better readability */
+            background-color: #f4f4f4; /* Light background color for contrast */
+            border-radius: 8px; /* Rounded corners for a modern look */
+            border: 4px solid #380e0e; /* Dark border for the section */
+        }
+        
+        #why-us h2 {
+            margin-bottom: 20px; /* Add more space below the heading */
+            font-size: 28px; /* Increase the font size of the heading */
+            color: #034f84; /* Change heading color */
+        }
+        
+        #why-us p, #why-us ul {
+            text-align: justify; /* Justify paragraph text */
+            margin-bottom: 20px; 
+        }
+        
+        #why-us ul {
+            list-style: none; /* Remove default list styling */
+            padding: 0;
+            margin-right: 40;
+        }
+        
+        #why-us li {
+            margin: 15px 0; /* Add space between list items */
+            font-size: 18px; /* Ensure the font size matches the rest of the text */
+            text-align: justify; /* Justify text in list items */
+        }
+        
+        #why-us li strong {
+            font-size: 18px; /* Ensure bold text is the same size */
+        }
+        
+        #why-us li::before {
+            color: #034f84; /* Bullet color */
+            font-weight: bold; /* Bold bullet */
+            display: inline-block; /* Align bullet with text */
+            width: 1em; /* Space between bullet and text */
+            margin-left: 60px; /* Remove default margin */
+        }
+         
+        #demo {
+            padding: 20px; /* Add padding for better readability */
+            text-align: center; /* Center align text */
+            margin-top: 20px; /* Adjust margin as needed */
+        }
+
+        #demo h2 {
+            margin-bottom: 10px; /* Space below heading */
+        }
+
+       #demo p {
+            text-align: justify; /* Justify paragraph text */
+        }
+
+        .footer {
+            background-color:  #284a65;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            position: relative; /* Position relative to allow content to flow */
+            clear: both; /* Clear both to ensure it stays below floated content */
+            margin-top: 20px; /* Adjust margin as needed */
+        }
+    </style>
+</head>
+<body>
+    <header class="l-header">
+        <nav class="nav bd-grid">
+            <ul class="nav__list">
+                <li class="nav__item"><a href="#home" class="nav__link">Home</a></li>
+                <li class="nav__item"><a href="#why-us" class="nav__link">Why us?</a></li>
+                <li class="nav__item"><a href="#demo" class="nav__link">View Demo</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container" id="home">
+        <div class="left-panel">
+            <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></div>
+            <h1>Hi there,</h1>
+            <h2>Optimize Your WiFi Layout Now!</h2>
+            <p class="subtitle">Struggling with WiFi dead zones?</p>
+            <p class="description">
+                Design your layout, enter obstacles, and our application will recommend the perfect router placement for a strong signal everywhere.
+            </p>
+        </div>
+
+        <div class="right-panel">
+           <img src="{{ url_for('static', filename='home3.jpg') }}" alt="Home Image">
+            <button id="get-started-btn">LET'S GET STARTED --></button>
+        </div>
+    </div>
+    <section id="why-us" data-aos="fade-down">
+        <h2>Why Us? 🏆</h2>
+        <p>At WiFi Layout Optimization, we understand the frustration of WiFi dead zones and weak signals. That's why we've developed a cutting-edge web application designed to help you achieve the best WiFi coverage possible. Here's why you should choose us:</p>
+        <ul>
+            <li>🚀 <strong>Innovative Technology</strong>: Our application uses advanced algorithms to analyze your layout and identify obstacles that could cause signal losses, ensuring you get the strongest signal everywhere.</li>
+            <li>🏡 <strong>Comprehensive Coverage</strong>: Say goodbye to dead zones! Our tool recommends the perfect router placement to cover every corner of your space, whether it's your home, office, or any other environment.</li>
+            <li>📈 <strong>User-Friendly Interface</strong>: With an intuitive design and easy-to-use features, optimizing your WiFi setup has never been easier. No technical expertise required!</li>
+            <li>🌟 <strong>Enhanced Performance</strong>: Enjoy faster and more reliable internet connections by eliminating interference and maximizing your network's efficiency.</li>
+            <li>🔧 <strong>Custom Solutions</strong>: Every space is unique, and so are our solutions. Tailor your WiFi setup to fit your specific needs and ensure seamless connectivity.</li>
+        </ul>
+        <p>Optimize your WiFi layout with us and experience the difference! 🌐📶✨</p>
+    </section>
+    
+    <section id="demo" data-aos="fade-right">
+        <h2>🎥 View Demo</h2>
+        <p>Watch the demo video below to see how our WiFi layout optimization tool works. 📡💻</p>
+        <video width="640" height="360" controls>
+            <source src="{{ url_for('static', filename='Demo.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <p>👆 Click play to start the video and learn how to optimize your WiFi coverage effortlessly!</p>
+    </section>
+    
+    <footer class="footer">
+        <p>&copy; 2024 WiFi Layout Optimization. All rights reserved.</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init();
+    
+        document.getElementById('get-started-btn').addEventListener('click', function() {
+            console.log('Button clicked'); // Debugging line
+            
+            // Send a request to delete files first
+            fetch('/delete_files', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '{{ url_for("layout1") }}';  // Flask route
+                } else {
+                    console.error('Failed to delete files');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+    
+    
+</body>
+</html>

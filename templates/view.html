@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout Details and Visualization</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    .container {
+      width: 80%;
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+    .logo {
+      float: left;
+      margin-right: 10px;
+    }
+    .logo img {
+      max-height: 100px;
+      width: auto;
+      margin-bottom: 40px; 
+      margin-top: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: rgb(0, 0, 0);
+    }
+    p {
+      text-align: center;
+      margin-bottom: 20px;
+      color: rgb(0, 0, 0);
+      font-size: 20px;
+    }
+    canvas {
+      border: 1px solid black;
+      background-color: rgb(181, 218, 227);
+      margin-bottom: 10px;
+    }
+    .button {
+      padding: 10px;
+      margin: 10px;
+      border: 1px solid black;
+      background-color: rgb(225, 156, 126);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 10px;
+    }
+    #buttonContainer {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+    </div>
+    <h1>Detailed Layout with Walls, Obstacles, and Wi-Fi Routers</h1>
+    <p>📶 Here's the optimal placement for your Wi-Fi router! We've analyzed the 2.4 GHz frequency to ensure the best location without needing a technician. 🛠️ Fix your placement hassle-free and enjoy seamless connectivity throughout your space!</p>
+  </div>
+  <canvas id="detailsCanvas" width="800" height="800"></canvas>
+  <div id="buttonContainer">
+    <div id="backButton" class="button" onclick="goBack()">Back</div>
+    <div id="saveButton" class="button" onclick="saveLayout()">Save</div>
+  </div>
+
+  <script>
+    let layoutData = JSON.parse(localStorage.getItem('layoutData')) || { width: 800, length: 800 };
+    let walls = JSON.parse(localStorage.getItem('wallData')) || [];
+    let obstacles = JSON.parse(localStorage.getItem('obstacleData')) || [];
+    let wifiRouters = []; // Will hold Wi-Fi router positions
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchWiFiData().then(() => {
+        drawCanvas();
+      });
+    });
+
+    async function fetchWiFiData() {
+      try {
+        const response = await fetch('/report.txt');  // Update to use relative path
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        
+        // Parse the report data
+        const dataMatch = text.match(/\((\d+), \[\((.*?)\)\]\)/);
+        if (dataMatch) {
+          const count = parseInt(dataMatch[1], 10); // Get the count of routers
+          const coordinates = dataMatch[2].split('), (').map(pair => {
+            const [x, y] = pair.replace(/\(|\)/g, '').split(',').map(Number);
+            return { x, y };
+          });
+
+          wifiRouters = coordinates;
+          console.log(`Fetched ${count} Wi-Fi router coordinates:`, wifiRouters);
+        }
+      } catch (error) {
+        console.error('Error fetching Wi-Fi data:', error);
+      }
+    }
+
+
+    function drawCanvas() {
+      const canvas = document.getElementById('detailsCanvas');
+      const ctx = canvas.getContext('2d');
+      const scaleX = canvas.width / layoutData.width;
+      const scaleY = canvas.height / layoutData.length;
+
+      // Draw a white background
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the grid
+      ctx.strokeStyle = '#ddd';
+      ctx.lineWidth = 1;
+      const gridSpacingX = canvas.width / layoutData.width;
+      const gridSpacingY = canvas.height / layoutData.length;
+      for (let i = 0; i <= canvas.width; i += gridSpacingX) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+
+        if (i > 0) {
+          ctx.fillStyle = 'black';
+          ctx.fillText((i / scaleX).toFixed(1) + ' m', i - 10, 10);
+        }
+      }
+      for (let i = 0; i <= canvas.height; i += gridSpacingY) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+
+        if (i > 0) {
+          ctx.fillStyle = 'black';
+          ctx.fillText((i / scaleY).toFixed(1) + ' m', 2, i - 2);
+        }
+      }
+
+      // Draw the layout boundary
+      ctx.strokeStyle = 'black';
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+      // Draw walls
+      walls.forEach(wall => drawWall(ctx, wall, scaleX, scaleY));
+
+      // Draw obstacles
+      obstacles.forEach(obstacle => drawObstacle(ctx, obstacle, scaleX, scaleY));
+
+      // Draw Wi-Fi routers
+      wifiRouters.forEach(router => drawWiFiRouter(ctx, router, scaleX, scaleY));
+    }
+
+    function drawWall(ctx, wall, scaleX, scaleY) {
+      const x1 = wall.x1 * scaleX;
+      const y1 = wall.y1 * scaleY;
+      const x2 = wall.x2 * scaleX;
+      const y2 = wall.y2 * scaleY;
+
+      ctx.save();
+      ctx.strokeStyle = 'brown';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'black';
+      ctx.fillText(wall.type, (x1 + x2) / 2, (y1 + y2) / 2);
+      ctx.restore();
+    }
+
+    function drawObstacle(ctx, obstacle, scaleX, scaleY) {
+      const x = obstacle.x * scaleX;
+      const y = obstacle.y * scaleY;
+
+      ctx.save();
+      ctx.fillStyle = 'blue';
+
+      switch (obstacle.name.toLowerCase()) {
+        case 'large cabinets':
+          ctx.fillText('🗄️', x, y - 20);
+          break;
+        case 'bookshelves':
+          ctx.fillText('🚪', x, y - 20);
+          break;
+        case 'microwave oven':
+          ctx.fillText('📺', x, y - 20);
+          break;
+        case 'refrigerators':
+          ctx.fillText('🧊', x, y - 20);
+          break;
+        case 'mirrors':
+          ctx.fillText('🪞', x, y - 20);
+          break;
+        default:
+          ctx.fillText('❓', x, y - 20);
+          break;
+      }
+
+      ctx.fillStyle = 'black';
+      ctx.fillText(obstacle.name, x, y - 40);
+      ctx.restore();
+    }
+
+    function drawWiFiRouter(ctx, router, scaleX, scaleY) {
+      const x = router.x * scaleX;
+      const y = router.y * scaleY;
+
+      ctx.save();
+      ctx.fillStyle = 'black';
+      ctx.font = "10px Arial";
+      ctx.fillText("Wi-Fi Router", x - 20, y - 10);
+
+      ctx.fillStyle = 'green';
+      ctx.font = "15px Arial";
+      const emoji = "🌐";
+      ctx.fillText(emoji, x - 10, y + 10);
+
+      ctx.fillStyle = 'black';
+      ctx.fillText(`(${router.x}, ${router.y})`, x + 40, y + 10);
+      ctx.restore();
+    }
+
+    function goBack() {
+      window.location.href = '/index';  // This now correctly points to your index route
+  }
+  
+
+
+    function saveLayout() {
+      // Save the current layout state to localStorage
+      localStorage.setItem('wallData', JSON.stringify(walls));
+      localStorage.setItem('obstacleData', JSON.stringify(obstacles));
+      localStorage.setItem('wifiRouterData', JSON.stringify(wifiRouters));
+
+      // Convert canvas content to data URL
+      const canvas = document.getElementById('detailsCanvas');
+      const dataURL = canvas.toDataURL('image/png');
+
+      // Create a download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataURL;
+      downloadLink.download = 'layout_with_coordinates.png';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      alert('Layout saved successfully!');
+    }
+  </script>
+</body>
+</html>

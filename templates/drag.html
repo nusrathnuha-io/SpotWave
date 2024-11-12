@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Layout with Walls and Obstacles</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: url('/static/background.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    canvas {
+      border: 1px solid black;
+      background-color: white;
+      margin-bottom: 10px;
+      
+    }
+    #controlPanel {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    #buttonContainer {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .button {
+      padding: 10px;
+      margin: 10px;
+      border: 1px solid black;
+      background-color: rgb(181, 194, 198);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .button1 {
+      padding: 10px;
+      margin: 10px;
+      border: 1px solid black;
+      background-color: rgb(225, 156, 126);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    p {
+      text-align: center; /* Center-align text */
+      justify-content: center; /* Justify content */
+      color: white; /* Set text color to black */
+      font-size: 22px; /* Increase font size to 18 pixels */
+      margin-right: 50px;
+      font-weight: bold;
+      margin-left:50px ;
+    }
+
+    .spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .spinner {
+      width: 80px;
+      height: 80px;
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .text {
+      margin-top: 20px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+ 
+<p >Get the perfect WiFi setup with our floor plan creator🎨! 📶 Drag and drop walls onto the canvas to design your space easily. Customize wall lengths and types to ensure the best placement for your WiFi router.</p>
+
+  <div id="controlPanel">
+    <div style="float: left; margin-right: 10px;">
+      <div id="ConcreteHorizontalWall" class="button" draggable="true" ondragstart="startDrag(event, 'HorizontalWall', 'concrete')">Concrete Horizontal Wall</div>
+      <div id="ConcreteVerticalWall" class="button" draggable="true" ondragstart="startDrag(event, 'VerticalWall', 'concrete')">Concrete Vertical Wall</div>
+      <div id="WoodHorizontalWall" class="button" draggable="true" ondragstart="startDrag(event, 'HorizontalWall', 'wood')">Wood Horizontal Wall</div>
+      <div id="WoodVerticalWall" class="button" draggable="true" ondragstart="startDrag(event, 'VerticalWall', 'wood')">Wood Vertical Wall</div>
+      <div id="GlassHorizontalWall" class="button" draggable="true" ondragstart="startDrag(event, 'HorizontalWall', 'glass')">Glass Horizontal Wall</div>
+      <div id="GlassVerticalWall" class="button" draggable="true" ondragstart="startDrag(event, 'VerticalWall', 'glass')">Glass Vertical Wall</div>
+      <div id="BrickHorizontalWall" class="button" draggable="true" ondragstart="startDrag(event, 'HorizontalWall', 'brick')">Brick Horizontal Wall</div>
+      <div id="BrickVerticalWall" class="button" draggable="true" ondragstart="startDrag(event, 'VerticalWall', 'brick')">Brick Vertical Wall</div>
+    </div>
+    <canvas id="sketchCanvas" width="800" height="800" ondragover="allowDrop(event)" ondrop="drop(event)"></canvas>
+  </div>
+  <div id="buttonContainer">
+    <div id="backButton" class="button1" onclick="goBack()">Back</div>
+    <div id="resultButton" class="button1" onclick="showResult()">Result</div>
+  </div>
+ <script>
+    let layoutData = JSON.parse(localStorage.getItem('layoutData')) || { width: 800, length: 800 };
+    let walls = [];
+    let obstacles = JSON.parse(localStorage.getItem('obstacleData')) || [];
+    let selectedItemType = null;
+    let isDragging = false;
+    let selectedWall = null;
+    let dragPoint = null;
+
+    function startDrag(event, type, wallType) {
+      selectedItemType = { type, wallType };
+      isDragging = true;
+      event.dataTransfer.setData('text/plain', type);
+    }
+
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const x = event.offsetX;
+      const y = event.offsetY;
+      if (selectedItemType) {
+        addWall(selectedItemType.type, selectedItemType.wallType, x, y);
+        selectedItemType = null;
+      }
+    }
+
+    function addWall(type, wallType, x, y) {
+      const canvas = document.getElementById('sketchCanvas');
+      const scaleX = layoutData.width / canvas.width;
+      const scaleY = layoutData.length / canvas.height;
+
+      const posX = x * scaleX;
+      const posY = y * scaleY;
+
+      if (type === 'HorizontalWall') {
+        const length = 100 * scaleX;
+        walls.push({ type, wallType, x1: posX, y1: posY, x2: posX + length, y2: posY, orientation: 'Horizontal' });
+      } else if (type === 'VerticalWall') {
+        const length = 100 * scaleY;
+        walls.push({ type, wallType, x1: posX, y1: posY, x2: posX, y2: posY + length, orientation: 'Vertical' });
+      }
+
+      localStorage.setItem('wallData', JSON.stringify(walls));
+      drawCanvas();
+    }
+
+    function drawCanvas() {
+      const canvas = document.getElementById('sketchCanvas');
+      const ctx = canvas.getContext('2d');
+      const scaleX = canvas.width / layoutData.width;
+      const scaleY = canvas.height / layoutData.length;
+  
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+      // Draw the grid
+      ctx.strokeStyle = '#ddd';
+      ctx.lineWidth = 1;
+      const gridSpacingX = canvas.width / layoutData.width;
+      const gridSpacingY = canvas.height / layoutData.length;
+      for (let i = 0; i <= canvas.width; i += gridSpacingX) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+  
+        if (i > 0) {
+          ctx.fillStyle = 'black';
+          ctx.fillText((i / scaleX).toFixed(1) + ' m', i - 10, 10); // Top X coordinate labels
+          ctx.fillText((i / scaleX).toFixed(1) + ' m', i - 10, canvas.height - 5); // Bottom X coordinate labels
+        }
+      }
+      for (let i = 0; i <= canvas.height; i += gridSpacingY) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+  
+        if (i > 0) {
+          ctx.fillStyle = 'black';
+          ctx.fillText((i / scaleY).toFixed(1) + ' m', 2, i - 2);
+        }
+      }
+  
+      // Draw the layout boundary
+      ctx.strokeStyle = 'black';
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  
+      // Draw walls
+      walls.forEach(wall => drawWall(ctx, wall, scaleX, scaleY));
+  
+      // Draw obstacles
+      obstacles.forEach(obstacle => drawObstacle(ctx, obstacle, scaleX, scaleY));
+    }
+  
+
+    function drawWall(ctx, wall, scaleX, scaleY) {
+      const x1 = wall.x1 * scaleX;
+      const y1 = wall.y1 * scaleY;
+      const x2 = wall.x2 * scaleX;
+      const y2 = wall.y2 * scaleY;
+
+      ctx.save();
+      ctx.strokeStyle = getWallColor(wall.wallType);
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'black';
+      ctx.fillText(wall.wallType, (x1 + x2) / 2, (y1 + y2) / 2);
+      ctx.restore();
+    }
+
+    function drawObstacle(ctx, obstacle, scaleX, scaleY) {
+      const x = obstacle.x * scaleX;
+      const y = obstacle.y * scaleY;
+    
+      ctx.save();
+      ctx.fillStyle = 'blue';
+    
+      // Convert obstacle name to lowercase for case-insensitive comparison
+      const obstacleNameLower = obstacle.name.toLowerCase();
+    
+      // Draw obstacles using emojis
+      switch (obstacleNameLower) {
+        case 'large cabinets':
+          ctx.fillText('🗄️', x, y - 20);
+          break;
+        
+        case 'bookshelves':
+          ctx.fillText('🚪', x, y - 20);
+          break;
+        case 'microwave oven':
+          ctx.fillText('📺', x, y - 20);
+          break;
+        case 'refrigerators':
+          ctx.fillText('🧊', x, y - 20);
+          break;
+        case 'mirrors':
+          ctx.fillText('🪞', x, y - 20);
+          break;
+        default:
+          ctx.fillText('❓', x, y - 20); // Default emoji for unknown obstacles
+          break;
+      }
+    
+      ctx.fillStyle = 'black';
+      ctx.fillText(obstacle.name, x, y - 40); // Text name above the emoji
+      ctx.restore();
+    }
+    
+  
+    function getWallColor(wallType) {
+      switch (wallType) {
+        case 'wood':
+          return 'brown';
+        case 'glass':
+          return 'lightblue';
+        case 'concrete':
+          return 'gray';
+        case 'brick':
+          return 'orange';
+        default:
+          return 'black';
+      }
+    }
+
+    document.addEventListener('mousedown', (e) => {
+      const canvas = document.getElementById('sketchCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      walls.forEach((wall) => {
+        const x1 = wall.x1 * (canvas.width / layoutData.width);
+        const y1 = wall.y1 * (canvas.height / layoutData.length);
+        const x2 = wall.x2 * (canvas.width / layoutData.width);
+        const y2 = wall.y2 * (canvas.height / layoutData.length);
+
+        if (Math.hypot(mouseX - x1, mouseY - y1) < 5) {
+          isDragging = true;
+          selectedWall = wall;
+          dragPoint = 'start';
+        } else if (Math.hypot(mouseX - x2, mouseY - y2) < 5) {
+          isDragging = true;
+          selectedWall = wall;
+          dragPoint = 'end';
+        }
+      });
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging || !selectedWall) return;
+
+      const canvas = document.getElementById('sketchCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const scaleX = layoutData.width / canvas.width;
+      const scaleY = layoutData.length / canvas.height;
+
+      const posX = mouseX * scaleX;
+      const posY = mouseY * scaleY;
+
+      if (dragPoint === 'start') {
+        selectedWall.x1 = posX;
+        selectedWall.y1 = posY;
+      } else if (dragPoint === 'end') {
+        selectedWall.x2 = posX;
+        selectedWall.y2 = posY;
+      }
+      drawCanvas();
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      selectedWall = null;
+      dragPoint = null;
+      localStorage.setItem('wallData', JSON.stringify(walls));
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchObstacleData();
+      drawCanvas();
+    });
+
+    function goBack() {
+      window.history.back();
+    }
+
+    function showResult() {
+      // Save wall and obstacle data to localStorage
+      localStorage.setItem('wallData', JSON.stringify(walls));
+      localStorage.setItem('obstacleData', JSON.stringify(obstacles));
+  
+      // Prepare data to send to the server
+      const dataToSend = {
+          length: layoutData.length,
+          width: layoutData.width,
+          walls: walls,
+          obstacles: obstacles
+      };
+  
+      // Send data to the Flask server
+      fetch('/save_layout_data', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dataToSend)
+      })
+      .then(response => response.json())
+      .then(result => {
+          if (result.success) {
+              alert('Data saved successfully!');
+              
+              // Redirect to process.html after successful data save
+              window.location.href = '/process';
+          } else {
+              alert('Error saving data: ' + result.error);
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to save data.');
+      });
+  }
+  
+
+  async function fetchObstacleData() {
+      try {
+          const response = await fetch('/obstacle_data');
+          if (response.ok) {
+              const obstacleData = await response.json();
+              obstacles = obstacleData.obstacles || [];
+              localStorage.setItem('obstacleData', JSON.stringify(obstacles));
+              drawCanvas();
+          } else {
+              console.error('Failed to fetch obstacle data');
+          }
+      } catch (error) {
+          console.error('Error fetching obstacle data:', error);
+      }
+  }
+
+  
+</script>
+</body>
+</html>

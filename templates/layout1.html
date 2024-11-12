@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <title>WiFi Layout Optimization</title>
+    <style>
+        /* CSS Styles remain unchanged */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .left-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 3; /* 75% of the width */
+            background: linear-gradient(to right, rgb(33, 114, 141) 30%, white 70%);
+            position: relative;
+        }
+
+        .content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 60px; /* Adjust for spacing from the left side */
+        }
+
+        .important-message {
+            background-color: rgb(141, 134, 134);
+            color: black;
+            padding: 40px 20px;
+            border-radius: 5px;
+            max-width: 50%;
+            text-align: center;
+        }
+
+        .form-container {
+            background-color: rgb(29, 29, 69);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-left: 5px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .right-panel {
+            flex: 1; /* 25% of the width */
+            background-color: white; /* Solid blue color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="content">
+                <div class="important-message" data-aos="fade-down">
+                    <p><b>📡 Optimal performance starts with perfect placement! Let's make sure your signal covers every corner. 🏡✨ Share your layout details with us to get started! 📋🛠️</b></p>
+                </div>
+                <div class="form-container" data-aos="fade-left">
+                    <form id="layout-form">
+                        <h2>Layout Detail Form</h2>
+                        <label for="length">Length (m):</label>
+                        <input type="number" id="length" name="length" required min="0">
+                        
+                        <label for="width">Width (m):</label>
+                        <input type="number" id="width" name="width" required min="0">
+                        
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init();
+    
+        // Clear only the layoutData from localStorage when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clear previously stored layout data from localStorage
+            localStorage.removeItem('layoutData');
+        });
+    
+        // Function to handle form submission
+        document.getElementById('layout-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+        
+            const length = document.getElementById('length').value;
+            const width = document.getElementById('width').value;
+        
+            console.log("Submitting Length: ", length);
+            console.log("Submitting Width: ", width);
+        
+            const layoutData = { length, width };
+    
+            // Store new layout data in localStorage
+            localStorage.setItem('layoutData', JSON.stringify(layoutData));
+    
+            // Send data to the backend server via fetch
+            fetch('/save_layout_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(layoutData),
+            })
+            .then(response => response.json())
+            .then(responseData => {
+                console.log('Success:', responseData);
+                if (responseData.success) {
+                    alert('Layout data saved successfully!');
+                    window.location.href = '/obstacle';
+                } else {
+                    alert('Error: ' + responseData.error);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+  
+    
+        function handleFormSubmission(form_data) {
+            let errors = validateFormData(form_data);
+            if (errors.length > 0) {
+                displayErrorMessages(errors);
+                return false;
+            }
+            return true;
+        }
+
+        function validateFormData(form_data) {
+            let errors = [];
+            if (!form_data.length) {
+                errors.push("Length is required.");
+            } else if (form_data.length < 0) {
+                errors.push("Length must be a positive number.");
+            }
+
+            if (!form_data.width) {
+                errors.push("Width is required.");
+            } else if (form_data.width < 0) {
+                errors.push("Width must be a positive number.");
+            }
+
+            return errors;
+        }
+
+        function displayErrorMessages(errors) {
+            alert("Error messages:\n" + errors.join("\n"));
+        }
+
+    </script>
+</body>
+</html>

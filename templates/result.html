@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Router Placement</title>
+    <style>
+        @font-face {
+            font-family: 'Calisto MT';
+            src: local('Calisto MT'), url('https://fonts.cdnfonts.com/s/10953/CalistoMT.woff') format('woff');
+        }
+        body {
+            font-family: 'Calisto MT', serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo img {
+            max-height: 100px; /* Adjust the height as needed */
+            width: auto; /* Maintain the aspect ratio */
+            margin-top: 40px;
+        }
+        .line {
+            width: 100%;
+            height: 5px;
+            background-color: black;
+            margin: 20px 0;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-container {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 20px;
+        }
+        .image-container img {
+            width: 60%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .text-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            text-align: left;
+            padding-left: 20px;
+        }
+        .header h1 {
+            font-size: 48px;
+            color: #333;
+            margin: 0;
+            line-height: 1.2;
+            text-align: center;
+        }
+        .view-button {
+            margin-top: 20px;
+            background-color: white;
+            border: 2px solid black;
+            color: black;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .view-button:hover {
+            background-color: black;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"></div>
+            <h1>Your Router placement Optimized.</h1>
+        </div>
+        <div class="line"></div>
+        <div class="content">
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='comp.png') }}" alt="Logo">
+            </div>
+            <div class="text-container">
+                
+                <p>Let us take the guesswork out of your WiFi setup! 📶 Our innovative tool analyzes your space, considering obstacles like walls 🧱 and furniture 🪑, to recommend the perfect placement for your router. Ensure seamless coverage everywhere with our optimized solutions. Ready to enhance your WiFi experience? Click below to view your personalized placement plan! 🌐</p>
+                <a href="{{ url_for('view') }}" class="view-button">View Placement</a>
+
+                
+            </div>
+        </div>
+    </div>
+</body>
+</html>

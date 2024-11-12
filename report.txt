@@ -1,0 +1,1 @@
+Optimal Router Positions: (1, [(0, 7)])
