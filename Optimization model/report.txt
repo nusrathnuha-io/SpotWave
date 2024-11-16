@@ -1,0 +1,2 @@
+Optimal Router Positions: (1, [(9, 3)])
+Fitness Score: -102.0
