@@ -1,0 +1,7 @@
+10.0
+12.0
+3
+2 3 glass
+5 7 concrete
+2 4 8 9 brick
+5 1 2 4 concrete
