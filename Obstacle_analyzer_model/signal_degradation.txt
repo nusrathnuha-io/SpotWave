@@ -1,2 +1,0 @@
-Layout Size: None 13.0
-Point (0, 0): Received Power = 20.0 dBm
